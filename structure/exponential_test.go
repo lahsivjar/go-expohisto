@@ -232,6 +232,23 @@ func TestAscendingSequence(t *testing.T) {
 	}
 }
 
+func TestCodec(t *testing.T) {
+	src := rand.NewSource(8584838584)
+	rnd := rand.New(src)
+	expected := NewFloat64(NewConfig(WithMaxSize(1024)))
+
+	totalCount := 512 + rand.Intn(512)
+	for i := 0; i < totalCount; i++ {
+		expected.Update(rnd.ExpFloat64())
+		expected.Update(-1 * rnd.ExpFloat64())
+	}
+
+	buf := expected.AppendBinary(nil)
+	actual := NewFloat64(NewConfig())
+	require.NoError(t, actual.UnmarshalBinary(buf))
+	requireEqual(t, expected, actual)
+}
+
 func testAscendingSequence(t *testing.T, maxSize, offset, initScale int32) {
 	for step := maxSize; step < 4*maxSize; step++ {
 		agg := NewFloat64(NewConfig(WithMaxSize(maxSize)))
